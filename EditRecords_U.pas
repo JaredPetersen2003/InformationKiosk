@@ -8,7 +8,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.Grids, Vcl.DBGrids,
   Vcl.StdCtrls, Vcl.Imaging.pngimage, Vcl.ExtCtrls, dmUserData_U,
   RegistrationPage_U,
-  LoginPage_U, HomePage_U, Vcl.Menus, System.UITypes;
+  LoginPage_U, HomePage_U, Vcl.Menus, System.UITypes, LocatePatient_U;
 
 type
   TfrmEdit = class(TForm)
@@ -71,21 +71,9 @@ begin
 end;
 
 procedure TfrmEdit.btnSearchClick(Sender: TObject);
-var
-  sName, sSurname: string;
-  iRoomNr: integer;
 begin
-  sName := EdtName.Text;
-  sSurname := EdtSurname.Text;
-  if (dmDatabase.tblPatientData.locate('Patient Name', sName, [])) and
-    (dmDatabase.tblPatientData.locate('Patient Surname', sSurname, [])) then
-  begin
-    // get room number of patient
-    iRoomNr := dmDatabase.tblPatientData['Room Number'];
-    showmessage('Patient is in room ' + inttostr(iRoomNr));
-  end
-  else
-    showmessage('Patient not found');
+ //initiates search procedure declare in Locate Patients Unit
+ frmLocatePatient.search(edtName.Text, edtSurname.Text);
 end;
 
 procedure TfrmEdit.BtnSwitchUserClick(Sender: TObject);
@@ -119,40 +107,19 @@ begin
 end;
 
 procedure TfrmEdit.btnSwitchClick(Sender: TObject);
-var
-  iCount, iC: integer;
 begin
-  iC := 1;
+  //switches between admins grid and patients grid
   if isSwitched = False then
   begin
-    dbgPatients.DataSource := dmDatabase.dscLogin;
-
-    dbgPatients.DataSource.DataSet.Close;
-    dbgPatients.DataSource.DataSet := dmDatabase.tblLoginInfo;
-    dbgPatients.Columns.RebuildColumns;
-    iCount := dbgPatients.Columns.Count;
-    showmessage(inttostr(iCount));
-    while not iCount = 3 do
-    begin
-      dbgPatients.Columns[iC].Width := 100;
-      inc(iC);
-    end;
-    dbgPatients.DataSource.DataSet.Open;
-    dbgPatients.DataSource.DataSet.Refresh;
+    dbgPatients.Visible:= False;
+    dbgAdmins.Visible:= True;
     isSwitched := True;
   end
   else
   begin
-    dbgPatients.DataSource := dmDatabase.dscPatientData;
+    dbgPatients.Visible:= True;
+    dbgAdmins.Visible:= False;
     isSwitched := False;
-    iCount := dbgPatients.Columns.Count;
-    showmessage(inttostr(iCount));
-    showmessage(inttostr(iC));
-    while iC <> iCount do
-    begin
-      dbgPatients.Columns[iC].Width := 100;
-      inc(iC);
-    end;
   end;
 end;
 
@@ -178,6 +145,7 @@ end;
 
 procedure TfrmEdit.SortBy(Sender: TObject);
 begin
+  //Sorts grid by selected item
   if cmbSort.Text = 'Name' then
     dmDatabase.tblPatientData.Sort := '[Patient Name] ASC';
   if cmbSort.Text = 'Surname' then

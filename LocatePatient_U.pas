@@ -36,6 +36,7 @@ type
     procedure BtnHomeClick(Sender: TObject);
     procedure BtnLoginClick(Sender: TObject);
     procedure Label4Click(Sender: TObject);
+    procedure search(sName, sSurname: string);
   private
     { Private declarations }
   public
@@ -51,6 +52,22 @@ implementation
 
 uses HomePage_u, LoginPage_U;
 
+procedure TfrmLocatePatient.search(sName, sSurname: string);
+var
+iRoomNr: integer;
+begin
+  //checks if patient exists
+  if (dmDatabase.tblPatientData.locate('Patient Name', sName, [])) and
+    (dmDatabase.tblPatientData.locate('Patient Surname', sSurname, [])) then
+  begin
+    // get room number of patient
+    iRoomNr:= dmDatabase.tblPatientData['Room Number'];
+    showmessage('Patient is in room ' + inttostr(iRoomNr));
+  end
+  else
+    showmessage('Patient not found');
+end;
+
 procedure TfrmLocatePatient.BtnHomeClick(Sender: TObject);
 begin
   frmLocatePatient.Hide;
@@ -64,22 +81,10 @@ begin
 end;
 
 procedure TfrmLocatePatient.btnSearchClick(Sender: TObject);
-var
-  sName, sSurname: string;
-  iRoomNr: integer;
 begin
-  sName := EdtName.Text;
-  sSurname := EdtSurname.Text;
-  if (dmDatabase.tblPatientData.locate('Patient Name', sName, [])) and
-    (dmDatabase.tblPatientData.locate('Patient Surname', sSurname, [])) then
-  begin
-    // get room number of patient
-    iRoomNr:= dmDatabase.tblPatientData['Room Number'];
-    showmessage('Patient is in room ' + inttostr(iRoomNr));
-  end
-  else
-    showmessage('Patient not found');
+  search(edtName.Text, edtSurname.Text);
 end;
+
 
 procedure TfrmLocatePatient.Label4Click(Sender: TObject);
 begin
@@ -89,6 +94,7 @@ end;
 
 procedure TfrmLocatePatient.OnCreate(Sender: TObject);
 begin
+  //opens database if not active
   if not dmDatabase.tblPatientData.Active then
     dmDatabase.tblPatientData.Open;
   // Changes the colour of various components

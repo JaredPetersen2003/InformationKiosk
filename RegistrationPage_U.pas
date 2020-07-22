@@ -60,7 +60,8 @@ var
 
 implementation
 
-uses LoginPage_U, HomePage_U, AdminPage_U;
+uses LoginPage_U, HomePage_U, AdminPage_U,
+  Appointments_U;
 
 {$R *.dfm}
 
@@ -85,6 +86,7 @@ begin
   sSurname := EdtSurname.Text;
   sGender := cmbGender.Text;
   sNumber := EdtPhoneNr.Text;
+  //error catching
   try
     StrToInt(sNumber);
   except
@@ -102,6 +104,7 @@ begin
     end
     else
     begin
+      //adds information to the database
       dmDatabase.tblPatientData.Insert;
       dmDatabase.tblPatientData['Patient Name'] := EdtName.Text;
       dmDatabase.tblPatientData['Patient Surname'] := EdtSurname.Text;
